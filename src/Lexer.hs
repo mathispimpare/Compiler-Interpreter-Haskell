@@ -6,25 +6,44 @@ import Data.Char
 lexer :: String -> [Token]
 lexer [] = []
 
+lexer ('@':xs) = case xs of
+    '@':after -> [TComment after]
+lexer ('=':xs) = case xs of
+    '=':after -> TEqualComp : lexer after
+    _ -> TEqual : lexer xs
 lexer ('+':xs) = TPlus : lexer xs
-lexer ('-':xs) = TMinus : lexer xs
-lexer ('*':xs) = TTimes : lexer xs
+lexer ('-':xs) = TSub : lexer xs
+lexer ('*':xs) = TMul : lexer xs
 lexer ('/':xs) = TDiv : lexer xs
-lexer ('\n':xs) = TNewLine : lexer xs
+lexer ('!':xs) = TFac : lexer xs
+
 lexer ('"':xs) = let (str, rest) = span(/= '"') xs in case rest of
     '"':after -> TString str : lexer after
-    _ -> error "String non fermée"
+    _ -> error "String not closed"
 lexer ('(':xs) = TLParen : lexer xs
 lexer (')':xs) = TRParen : lexer xs
+lexer (',':xs) = TComma : lexer xs
+
+lexer ('\n':xs) = TNewLine : lexer xs
+
 lexer (x:xs)
   | isSpace x = lexer xs
   | isDigit x =
-      let (n, rest) = span isDigit (x:xs)
-      in TInt (read n) : lexer rest
+      let (beforeDot, rest) = span isDigit (x:xs)
+      in case rest of
+        '.':y:ys | isDigit y ->
+            let (afterDot, rest) = span isDigit (y:ys)
+            in TFloat (read (beforeDot ++ "." ++ afterDot)) : lexer rest
+        _ -> TInt (read beforeDot) : lexer rest
   | isAlpha x =
       let (word, rest) = span isAlphaNum (x:xs)
-      in keywordOrIdentifier word : lexer rest
+      in wordIdentifier word : lexer rest
 
-keywordOrIdentifier :: String -> Token
-keywordOrIdentifier "print" = TPrint
-keywordOrIdentifier name = TIdentifier name
+wordIdentifier :: String -> Token
+-- Commands
+wordIdentifier "print" = TPrint
+-- Bool
+wordIdentifier "true" = TBool True
+wordIdentifier "false" = TBool False
+-- Identifiers (variables)
+wordIdentifier name = TIdentifier name

@@ -3,24 +3,28 @@ module Token where
 data Token =
     -- Literals
     TInt Int
-    | TFloat Float
+    | TFloat Double
     | TChar Char
     | TString String
+    | TBool Bool
     | TNewLine
+
+    -- Identifiers and Keywords
     | TIdentifier String
+    | TEqual
+    | TEqualComp     -- Equal comparison (==)
     | TPrint
-    
+
     -- Arithmetic Operators
     | TPlus
-    | TMinus
-    | TTimes
+    | TSub
+    | TMul
     | TDiv
-    | TFact
+    | TFac
 
     -- Punctuation
     | TLParen
     | TRParen
     | TComma
-    | TPoint
-    | TSemicolon
-    deriving Show
+    | TComment String
+    deriving (Show, Eq)

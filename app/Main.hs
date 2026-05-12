@@ -1,11 +1,15 @@
 module Main where
 
-import Parser
 import Lexer
+import Parser
+import TypeCheck
 
 main :: IO ()
 main = do
   source <- readFile "app/source.my"
   let tokens = lexer source
-  let program = parse tokens
-  print program
+  print tokens
+  let programUnchecked = parse tokens
+  print programUnchecked
+  -- let programChecked = typeCheck programUnchecked
+  -- print programChecked

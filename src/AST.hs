@@ -35,3 +35,4 @@ data Type =
     | FloatType
     | StringType
     | BoolType
+    | Null

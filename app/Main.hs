@@ -11,5 +11,5 @@ main = do
   print tokens
   let programUnchecked = parse tokens
   print programUnchecked
-  -- let programChecked = typeCheck programUnchecked
-  -- print programChecked
+  let programChecked = typeCheck programUnchecked
+  print programChecked

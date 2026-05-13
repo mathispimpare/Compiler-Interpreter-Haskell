@@ -4,24 +4,24 @@ import AST
 import Parser( zeroOf )
 
 typeCheck :: [Statement] -> Either String [Statement]
-typeCheck (x:xs) = case x of
-    Comment string -> case typeCheck xs of
-        Right rest -> Right (Comment string : rest)
+typeCheck [] = Right []
+typeCheck (stmt:rest) = case typeCheckStatement stmt of
+    Left err -> Left err
+    Right checkedStmt -> case typeCheck rest of
         Left err -> Left err
+        Right checkedRest -> Right (checkedStmt:checkedRest)
+
+typeCheckStatement :: Statement -> Either String Statement
+typeCheckStatement stmt = case stmt of
+    Comment _ -> Right stmt
     Print expr -> case typeCheckExpr expr of
-        Right rest -> case typeCheck xs of
-            Right rest' -> Right (Print expr : rest')
-            Left err -> Left err
+        Right _ -> Right stmt
         Left err -> Left err
-    Assignation var expr -> case typeCheckExpr expr of
-        Right rest -> case typeCheck xs of
-            Right rest' -> Right (Assignation var expr : rest')
-            Left err -> Left err
+    Assignation _ expr -> case typeCheckExpr expr of
+        Right _ -> Right stmt
         Left err -> Left err
     ExprStmt expr -> case typeCheckExpr expr of
-        Right rest -> case typeCheck xs of
-            Right rest' -> Right (ExprStmt expr : rest')
-            Left err -> Left err
+        Right _ -> Right stmt
         Left err -> Left err
 
 typeCheckExpr :: Expr -> Either String Expr

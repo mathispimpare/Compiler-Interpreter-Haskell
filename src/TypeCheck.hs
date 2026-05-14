@@ -91,13 +91,44 @@ validateNumOp a b = case (a, b) of
         _ -> False
 
 typeOf :: (Expr, Type) -> Type
-typeOf (expr, Null) = case expr of
-    (Div _ _) -> FloatType
-    (Add _ (FloatLit _)) -> FloatType
-    (Add (FloatLit _) _) -> FloatType
-    (Sub _ (FloatLit _)) -> FloatType
-    (Sub (FloatLit _) _) -> FloatType
-    (Mul _ (FloatLit _)) -> FloatType
-    (Mul (FloatLit _) _) -> FloatType
-    _ -> IntType
-typeOf (expr, t) = t
+typeOf (_, t) | t /= Null = t
+typeOf (expr, Null) =
+  case expr of
+    IntLit _ -> IntType
+    FloatLit _ -> FloatType
+    StrLit _ -> StringType
+    BoolLit _ -> BoolType
+
+    Add a b -> typeOfAdd (typeOf (a, Null)) (typeOf (b, Null))
+    Sub a b -> typeOfNum (typeOf (a, Null)) (typeOf (b, Null))
+    Mul a b -> typeOfMul (typeOf (a, Null)) (typeOf (b, Null))
+    Div a b -> typeOfDiv (typeOf (a, Null)) (typeOf (b, Null))
+
+    EqualComp _ _ -> BoolType
+    Var _ -> Null
+    Fac a -> typeOf (a, Null)
+
+typeOfAdd :: Type -> Type -> Type
+typeOfAdd StringType StringType = StringType
+typeOfAdd a b = typeOfNum a b
+
+typeOfNum :: Type -> Type -> Type
+typeOfNum FloatType _ = FloatType
+typeOfNum _ FloatType = FloatType
+typeOfNum IntType IntType = IntType
+typeOfNum BoolType BoolType = BoolType
+typeOfNum IntType BoolType = IntType
+typeOfNum BoolType IntType = IntType
+typeOfNum _ _ = Null
+
+typeOfMul :: Type -> Type -> Type
+typeOfMul StringType IntType = StringType
+typeOfMul IntType StringType = StringType
+typeOfMul a b = typeOfNum a b
+
+typeOfDiv :: Type -> Type -> Type
+typeOfDiv StringType _ = Null
+typeOfDiv _ StringType = Null
+typeOfDiv Null _ = Null
+typeOfDiv _ Null = Null
+typeOfDiv _ _ = FloatType

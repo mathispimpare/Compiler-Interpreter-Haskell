@@ -36,3 +36,4 @@ data Type =
     | StringType
     | BoolType
     | Null
+    deriving (Show, Eq)

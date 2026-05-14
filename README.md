@@ -13,6 +13,7 @@ stack cabal run
 ```-->
 
 ## Structure
+```txt
 ├── hie.yaml
 ├── README.md
 ├── app
@@ -24,3 +25,4 @@ stack cabal run
     ├── Parser.hs
     ├── Token.hs
     └── TypeCheck.hs
+```

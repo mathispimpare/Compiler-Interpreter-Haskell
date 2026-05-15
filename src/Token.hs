@@ -4,7 +4,6 @@ data Token =
     -- Literals
     TInt Int
     | TFloat Double
-    | TChar Char
     | TString String
     | TBool Bool
     | TNewLine
@@ -12,8 +11,14 @@ data Token =
     -- Identifiers and Keywords
     | TIdentifier String
     | TEqual
-    | TEqualComp     -- Equal comparison (==)
+    | TIf
     | TPrint
+    -- Comparisons
+    | TEqualComp     -- Equal comparison (==)
+    | TGt
+    | TGtEq
+    | TLt
+    | TLtEq
 
     -- Arithmetic Operators
     | TPlus
@@ -26,5 +31,4 @@ data Token =
     | TLParen
     | TRParen
     | TComma
-    | TComment String
     deriving (Show, Eq)

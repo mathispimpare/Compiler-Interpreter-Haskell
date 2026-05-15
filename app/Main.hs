@@ -11,7 +11,7 @@ main = do
   print tokens
   let programUnchecked = parse tokens
   print programUnchecked
-  let programChecked = typeCheck programUnchecked
+  let programChecked = typeCheck [] programUnchecked
   case programChecked of
-    Right program -> print ("Types are correct, program checked : " ++ show program)
-    Left err -> putStrLn("Type error : " ++ err)
+    Right true -> print("Types are correct")
+    Left false -> error("Type error : " ++ false)

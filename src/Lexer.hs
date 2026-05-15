@@ -8,7 +8,14 @@ lexer [] = []
 
 lexer ('@':xs) = case xs of
     '@':after -> let (a, as) = commentEnd after in
-        TComment a : lexer as
+        lexer as -- Ignore comments (no need to put them in the Tokens list)
+
+lexer ('>':xs) = case xs of
+    '=':after -> TGtEq : lexer after
+    _ -> TGt : lexer xs
+lexer ('<':xs) = case xs of
+    '=':after -> TLtEq : lexer after
+    _ -> TLt : lexer xs
 lexer ('=':xs) = case xs of
     '=':after -> TEqualComp : lexer after
     _ -> TEqual : lexer xs

@@ -1,23 +1,34 @@
 module AST where
 
 data Program =
-    Program [Statement]
+    Program [Expr]
     deriving Show
 
-data Statement =
-    Comment String
-    | Print Expr
-    | Assignation Expr Expr
-    | ExprStmt Expr
-    deriving Show
+type Env = [(String, Expr)]
+type TypeEnv = [(String, Type)]
+
+data Val =
+    VInt Int
+    | VFloat Double
+    | VString String
+    | VBool Bool
+    | VFun String Expr Env
+    deriving (Show)
 
 data Expr =
     -- Literals
     IntLit Int
     | FloatLit Double
     | StrLit String
-    | Var String
     | BoolLit Bool
+
+    | Comment String
+    | Print Expr
+    | Var String
+    | Assign String Expr
+    | App Expr Expr
+    | Fun String Expr Env
+    | Lam String Type Expr
 
     -- Operations
     | Add Expr Expr
@@ -27,7 +38,12 @@ data Expr =
     | Fac Expr
 
     -- Comparisons
+    | If Expr Expr Expr
     | EqualComp Expr Expr
+    | GreaterThan Expr Expr
+    | GreaterThanEq Expr Expr
+    | LessThan Expr Expr
+    | LessThanEq Expr Expr
     deriving Show
 
 data Type =
@@ -35,5 +51,6 @@ data Type =
     | FloatType
     | StringType
     | BoolType
+    | FunType Type Type
     | Null
     deriving (Show, Eq)

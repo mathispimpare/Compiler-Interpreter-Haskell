@@ -4,7 +4,7 @@ import Lexer
 import Token
 import AST
 
-parse :: [Token] -> [Statement]
+parse :: [Token] -> [Expr]
 parse (checkTNewLine:tokens) = case checkTNewLine of
     TNewLine -> parse tokens
     _ -> let parsedTokens = parseLines(splitOnNewLine (checkTNewLine:tokens)) in case parsedTokens of
@@ -12,23 +12,16 @@ parse (checkTNewLine:tokens) = case checkTNewLine of
         _ -> parsedTokens
 parse [] = error "Empty source file."
 
-parseLines :: [[Token]] -> [Statement]
--- parseLines [] = []
+parseLines :: [[Token]] -> [Expr]
 parseLines ([] : xs) = parseLines xs
-parseLines (line : xs) = parseLine line : parseLines xs
+parseLines (line : xs) = parseExprFull line : parseLines xs
 parseLines _ = []
 
-
-parseLine :: [Token] -> Statement
-parseLine [TComment comment] = Comment comment
-
-parseLine (TPrint:rest) = Print (parseExprFull rest)
-
-parseLine (TIdentifier name : TEqual : valueTok) = Assignation (Var name) (parseExprFull valueTok)
-
-parseLine tokens = ExprStmt (parseExprFull tokens)
-
 parseExprFull :: [Token] -> Expr
+parseExprFull (TPrint:rest) = Print (parseExprFull rest)
+
+parseExprFull (TIdentifier name : TEqual : valueTok) = Assign name (parseExprFull valueTok)
+
 parseExprFull tokens =
     case parseExpr tokens of
         (expr, []) -> expr
@@ -40,11 +33,24 @@ parseExpr tokens =
     in parseExpr' left rest
 
 parseExpr' :: Expr -> [Token] -> (Expr, [Token])
-
+-- Comparisons
+parseExpr' left (TGt : rest) =
+    let (right, rest') = parseExpr rest
+    in parseExpr' (GreaterThan left right) rest'
+parseExpr' left (TGtEq : rest) =
+    let (right, rest') = parseExpr rest
+    in parseExpr' (GreaterThanEq left right) rest'
+parseExpr' left (TLt : rest) =
+    let (right, rest') = parseExpr rest
+    in parseExpr' (LessThan left right) rest'
+parseExpr' left (TLtEq : rest) =
+    let (right, rest') = parseExpr rest
+    in parseExpr' (LessThanEq left right) rest'
 parseExpr' left (TEqualComp : rest) =
     let (right, rest') = parseExpr rest
     in parseExpr' (EqualComp left right) rest'
 
+-- Arithmetic operations
 parseExpr' left (TPlus : rest) =
     let (right, rest') = parseFactor rest
     in parseExpr' (Add left right) rest'
@@ -69,10 +75,6 @@ parseExpr' left rest =
 
 
 parseFactor :: [Token] -> (Expr, [Token])
-parseFactor (TSub : rest) =
-    let (expr, rest') = parseFactor rest
-    in (Sub (zeroOf expr) expr, rest')
-
 parseFactor (TInt x : rest) =
     (IntLit x, rest)
 
@@ -85,17 +87,22 @@ parseFactor (TString s : rest) =
 parseFactor (TBool b : rest) =
     (BoolLit b, rest)
 
-parseFactor (TIdentifier name : rest) =
-    (Var name, rest)
-
 parseFactor (TLParen : rest) =
     case parseExpr rest of
         (expr, TRParen : rest') -> (expr, rest')
         _ -> error "Missing closing parenthesis."
 
+-- Sub case of : -Int, -Float, -Bool (without the left part of the substraction)
+parseFactor (TSub : rest) =
+    let (expr, rest') = parseFactor rest
+    in (Sub (zeroOf expr) expr, rest')
+
+parseFactor (TIdentifier name : rest) = (Var name, rest)
+
 parseFactor _ = error "Expected expression."
 
-
+-- Split the list of Tokens in a List of List of Tokens,
+-- each sublist being instructions written on a line
 splitOnNewLine :: [Token] -> [[Token]]
 splitOnNewLine (TNewLine:xs) = case xs of
     [] -> [[]]
@@ -106,6 +113,7 @@ splitOnNewLine (x:xs) =
     in (x : head lines) : tail lines
 splitOnNewLine [] = [[]]
 
+-- Return the zero of the corresponding type.
 zeroOf :: Expr -> Expr
 zeroOf (FloatLit _) = FloatLit 0
 zeroOf (IntLit _) = IntLit 0

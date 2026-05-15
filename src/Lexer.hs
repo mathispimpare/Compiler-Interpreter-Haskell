@@ -7,7 +7,8 @@ lexer :: String -> [Token]
 lexer [] = []
 
 lexer ('@':xs) = case xs of
-    '@':after -> [TComment after]
+    '@':after -> let (a, as) = commentEnd after in
+        TComment a : lexer as
 lexer ('=':xs) = case xs of
     '=':after -> TEqualComp : lexer after
     _ -> TEqual : lexer xs
@@ -40,6 +41,7 @@ lexer (x:xs)
       in wordIdentifier word : lexer rest
 
 wordIdentifier :: String -> Token
+wordIdentifier "if" = TIf
 -- Commands
 wordIdentifier "print" = TPrint
 -- Bool
@@ -47,3 +49,8 @@ wordIdentifier "true" = TBool True
 wordIdentifier "false" = TBool False
 -- Identifiers (variables)
 wordIdentifier name = TIdentifier name
+
+commentEnd :: String -> (String, String)
+commentEnd ('\n':xs) = ("", xs)
+commentEnd (x:xs) = let (a, b) = commentEnd xs in
+    (x:a, b)

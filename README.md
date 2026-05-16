@@ -1,4 +1,4 @@
-# Compilateur / Interpreteur Haskell
+# Compilateur / Interpreteur Haskell (feature/interpreter-core contains the current development state)
 
 A **Haskell** project allowing to create and interpret a personalized programming language.
 

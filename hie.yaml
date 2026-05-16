@@ -1,5 +1,5 @@
 cradle:
-  direct:
+  stack:
     arguments:
       - -isrc
       - -iapp

@@ -1,0 +1,22 @@
+name: interpreter
+version: 0.1.0.0
+license: Apache-2.0
+
+dependencies:
+  - base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  exposed-modules:
+    - AST
+    - Lexer
+    - Parser
+    - Token
+    - TypeCheck
+
+executables:
+  interpreter-exe:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+      - interpreter
